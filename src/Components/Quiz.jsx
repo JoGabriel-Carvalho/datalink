@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import questionsData from '../Util/questions'; // Correção na importação
+import questionsData from '../Util/questions'; // Importação do arquivo de perguntas
 
 // Função para embaralhar as perguntas (algoritmo Fisher-Yates)
 const shuffleArray = (array) => {
@@ -10,25 +10,34 @@ const shuffleArray = (array) => {
   return array;
 };
 
-const MAX_TIME = 10; // 10 segundos por pergunta
-const MAX_POINTS = 100; // Pontuação máxima por pergunta
-const PENALTY_POINTS = 10; // Penalidade ajustada para 10 pontos
+const MAX_TIME = 10;
+const BASE_POINTS_NORMAL = 50; // Pontuação padrão para perguntas normais
+const BASE_POINTS_PARITY_CHECKSUM = 200; // Pontuação padrão para paridade/checksum
+const MIN_POINTS = 10; // Pontuação mínima para todas as perguntas
+const PENALTY_POINTS = 10; // Penalidade para respostas incorretas
 
 const Quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0); // Pontuação total
+  const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null); 
   const [isCorrect, setIsCorrect] = useState(null); 
   const [questions, setQuestions] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(MAX_TIME); // Tempo restante para calcular pontuação
+  const [timeLeft, setTimeLeft] = useState(MAX_TIME); 
+  const [userInput, setUserInput] = useState(''); // Campo de entrada
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desativar o botão
 
   useEffect(() => {
-    // Embaralhar as perguntas no início do quiz
-    setQuestions(shuffleArray([...questionsData]));
+    const savedScore = localStorage.getItem('quizScore');
+    if (savedScore) {
+      setShowScore(true); // Se houver uma pontuação salva, mostra a pontuação final
+      setScore(Number(savedScore)); // Converte para número
+    } else {
+      setQuestions(shuffleArray([...questionsData])); // Se não houver pontuação salva, inicia o quiz
+    }
   }, []);
 
-  // Controla o temporizador em segundo plano, mas não mostra o tempo
+  // Controla o temporizador em segundo plano
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -36,32 +45,71 @@ const Quiz = () => {
     }
   }, [timeLeft]);
 
-  // Lida com a seleção de uma resposta
-  const handleAnswerOptionClick = (selectedOption) => {
-    setSelectedAnswer(selectedOption);
-    const correctAnswer = questions[currentQuestion].answer;
+  // Multiplicador baseado no tempo restante
+  const calculateMultiplier = (timeLeft) => {
+    return Math.max(1, timeLeft); // Multiplicador vai até 10x e nunca fica menor que 1
+  };
 
-    // Se a resposta estiver correta, calcula a pontuação com base no tempo restante
-    if (selectedOption === correctAnswer) {
+  // Função para calcular a pontuação com multiplicador
+  const calculatePoints = (basePoints) => {
+    const multiplier = calculateMultiplier(timeLeft);
+    return Math.max(MIN_POINTS, basePoints * multiplier);
+  };
+
+  // Lida com perguntas de bit de paridade e checksum
+  const handleAnswerSubmit = () => {
+    setIsButtonDisabled(true); // Desativa o botão após o clique
+    const correctAnswer = questions[currentQuestion].expectedAnswer;
+
+    if (userInput === correctAnswer) {
       setIsCorrect(true);
-      const pointsEarned = (timeLeft / MAX_TIME) * MAX_POINTS;
-      setScore(score + Math.floor(pointsEarned)); // Atualiza a pontuação total
+      const pointsEarned = calculatePoints(BASE_POINTS_PARITY_CHECKSUM);
+      setScore(score + Math.floor(pointsEarned));
     } else {
       setIsCorrect(false);
-      // Penaliza o jogador por resposta errada com 10 pontos
-      setScore(score - PENALTY_POINTS); // Penalidade ajustada para 10 pontos
+      setScore(score - PENALTY_POINTS);
     }
 
-    // Aguarda 2 segundos antes de ir para a próxima pergunta
     setTimeout(() => {
       const nextQuestion = currentQuestion + 1;
       if (nextQuestion < questions.length) {
         setCurrentQuestion(nextQuestion);
         setSelectedAnswer(null); 
         setIsCorrect(null); 
-        setTimeLeft(MAX_TIME); // Reseta o tempo para a próxima pergunta
+        setTimeLeft(MAX_TIME); 
+        setUserInput(''); 
+        setIsButtonDisabled(false); // Reativa o botão quando a próxima pergunta carregar
       } else {
         setShowScore(true);
+        localStorage.setItem('quizScore', score); // Armazena a pontuação no local storage
+      }
+    }, 2000);
+  };
+
+  // Função para lidar com múltipla escolha
+  const handleAnswerOptionClick = (selectedOption) => {
+    setSelectedAnswer(selectedOption);
+    const correctAnswer = questions[currentQuestion].answer;
+
+    if (selectedOption === correctAnswer) {
+      setIsCorrect(true);
+      const pointsEarned = calculatePoints(BASE_POINTS_NORMAL);
+      setScore(score + Math.floor(pointsEarned));
+    } else {
+      setIsCorrect(false);
+      setScore(score - PENALTY_POINTS);
+    }
+
+    setTimeout(() => {
+      const nextQuestion = currentQuestion + 1;
+      if (nextQuestion < questions.length) {
+        setCurrentQuestion(nextQuestion);
+        setSelectedAnswer(null); 
+        setIsCorrect(null); 
+        setTimeLeft(MAX_TIME);
+      } else {
+        setShowScore(true);
+        localStorage.setItem('quizScore', score); // Armazena a pontuação no local storage
       }
     }, 2000);
   };
@@ -70,7 +118,14 @@ const Quiz = () => {
     <div className="quiz">
       {showScore ? (
         <div className="score-section">
-          Você fez {score} pontos de um máximo possível de {questions.length * MAX_POINTS}!
+          {score > 0 ? (
+            <>
+              <h2>Sua pontuação foi: {score}!</h2>
+              <p>Você terminou o quiz.</p>
+            </>
+          ) : (
+            <p>Nenhuma pontuação salva. Iniciando o quiz...</p>
+          )}
         </div>
       ) : (
         questions.length > 0 && (
@@ -81,23 +136,37 @@ const Quiz = () => {
               </div>
               <div className="question-text">{questions[currentQuestion].question}</div>
             </div>
-            <div className="score-display">Pontuação total: {score}</div> {/* Exibe a pontuação total */}
-            <div className="answer-section">
-              {questions[currentQuestion].options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerOptionClick(option)}
-                  disabled={selectedAnswer !== null} 
-                  className={selectedAnswer === option 
-                    ? isCorrect 
-                      ? 'correct-answer' 
-                      : 'incorrect-answer' 
-                    : ''}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+            <div className="score-display">Pontuação total: {score}</div>
+
+            {questions[currentQuestion].type === "checksum" || questions[currentQuestion].type === "parity" ? (
+              <div>
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value.replace(/[^0-9]/g, ''))} // Aceita apenas números
+                  placeholder="Digite sua resposta"
+                  style={{ fontSize: '1.5rem', fontFamily: 'Nunito', padding: '10px', width: '80%' }}
+                />
+                <button onClick={handleAnswerSubmit} disabled={isButtonDisabled}>Enviar Resposta</button>
+              </div>
+            ) : (
+              <div className="answer-section">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswerOptionClick(option)}
+                    disabled={selectedAnswer !== null}
+                    className={selectedAnswer === option 
+                      ? isCorrect 
+                        ? 'correct-answer' 
+                        : 'incorrect-answer' 
+                      : ''}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )
       )}

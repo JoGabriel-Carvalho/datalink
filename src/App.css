@@ -103,4 +103,23 @@ h1 {
   }
   
   /* O restante do CSS permanece o mesmo */
+
+  input {
+    padding: 10px;
+    font-size: 1rem;
+    margin: 10px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #2980b9;
+  }
   

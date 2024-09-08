@@ -1,4 +1,5 @@
 const questions = [
+    // Perguntas de múltipla escolha
     {
       question: "Qual é a principal função da camada de enlace no modelo OSI?",
       options: [
@@ -149,7 +150,7 @@ const questions = [
       ],
       answer: "A) LLC lida com controle de fluxo e erros, enquanto MAC lida com acesso ao meio físico"
     },
-    // Novas perguntas adicionadas abaixo
+    // Perguntas adicionais de múltipla escolha
     {
       question: "O que é o algoritmo CRC usado na camada de enlace?",
       options: [
@@ -259,8 +260,47 @@ const questions = [
         "D) Todos os acima"
       ],
       answer: "D) Todos os acima"
-    }
+    },
+  
+    // Perguntas de bit de paridade
+    {
+      type: "parity",
+      question: "Qual é o bit de paridade (par) correto para a seguinte sequência de bits: 1101010?",
+      bits: "1101010",
+      expectedAnswer: "1"
+    },
+    {
+      type: "parity",
+      question: "Qual é o bit de paridade (impar) correto para a seguinte sequência de bits: 1010101?",
+      bits: "1010101",
+      expectedAnswer: "1"
+    },
+    {
+      type: "parity",
+      question: "Qual é o bit de paridade (par) correto para a seguinte sequência de bits: 101110101",
+      bits: "101110101",
+      expectedAnswer: "0"
+    },
+  
+    // Perguntas de checksum
+    {
+        type: "checksum",
+        question: "Calcule o checksum da seguinte sequência de bits: 11010101 01100010",
+        bits: ["11010101", "01100010"],
+        expectedAnswer: "00110111"
+      },
+      {
+        type: "checksum",
+        question: "Calcule o checksum da seguinte sequência de bits: 10011010 10101100",
+        bits: ["10011010", "10101100"],
+        expectedAnswer: "01000110"
+      },
+      {
+        type: "checksum",
+        question: "Calcule o checksum da seguinte sequência de bits: 11110000 00001111",
+        bits: ["11110000", "00001111"],
+        expectedAnswer: "11111111"
+      }
   ];
   
-  export default questions;
-  
+export default questions;
