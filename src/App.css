@@ -1,38 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: #f0f4f8;
+  color: #333;
+}
+
 .App {
   text-align: center;
+  padding: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1 {
+  font-weight: 800;
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.quiz {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 900px; /* Aumentei a largura máxima para 900px */
+  width: 100%;
+  margin: 0 auto; /* Centralizado */
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.question-section {
+  margin-bottom: 20px;
+}
+
+.question-count {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #95a5a6;
+}
+
+.question-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 20px 0;
+  color: #34495e;
+}
+
+.answer-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.answer-section button {
+  background-color: #3498db;
+  border: none;
+  color: white;
+  padding: 16px 24px;
+  font-size: 1.25rem;
+  margin: 12px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.answer-section button:hover {
+  background-color: #2980b9;
+}
+
+.answer-section button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.correct-answer {
+  background-color: #2ecc71 !important; /* Verde para resposta correta */
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.incorrect-answer {
+  background-color: #e74c3c !important; /* Vermelho para resposta incorreta */
+  color: white;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.score-section {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #27ae60;
+  margin-top: 20px;
 }
+
+/* Estilização da pontuação total em tempo real */
+.score-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #27ae60;
+    margin: 20px 0;
+  }
+  
+  /* O restante do CSS permanece o mesmo */
+  
